@@ -147,6 +147,8 @@ class GPTResearcher:
 
         # If this is not part of a sub researcher, add original query to research for better results
         if self.report_type != "subtopic_report":
+            # print("\n\nSUB_QUERIES:", sub_queries)
+            # print("\n\nQUERY:", query)
             sub_queries.append(query)
 
         if self.verbose:

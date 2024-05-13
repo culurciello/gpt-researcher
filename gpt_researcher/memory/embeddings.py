@@ -1,4 +1,6 @@
 from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.llms import Ollama
 import os
 
 
@@ -9,7 +11,7 @@ class Memory:
         match embedding_provider:
             case "ollama":
                 from langchain.embeddings import OllamaEmbeddings
-                _embeddings = OllamaEmbeddings(model="llama2")
+                _embeddings = OllamaEmbeddings(model="llama3")
             case "openai":
                 from langchain_openai import OpenAIEmbeddings
                 _embeddings = OpenAIEmbeddings(model="text-embedding-3-small")

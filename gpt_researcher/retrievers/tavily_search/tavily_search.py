@@ -34,7 +34,7 @@ class TavilySearch():
                             "You can get a key at https://app.tavily.com")
         return api_key
 
-    def search(self, max_results=7):
+    def search(self, max_results=3):
         """
         Searches the query
         Returns:
