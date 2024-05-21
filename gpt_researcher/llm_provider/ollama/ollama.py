@@ -2,7 +2,7 @@ import os
 
 from colorama import Fore, Style
 from langchain.llms import Ollama
-import json
+# import json
 
 class OllamaProvider:
 
@@ -38,7 +38,7 @@ class OllamaProvider:
 
     def get_llm_model(self):
         # Initializing the chat model
-        llm = Ollama(model="llama3")
+        llm = Ollama(model="llama3:instruct")
         return llm
 
     async def get_chat_response(self, messages, stream, websocket=None):
@@ -47,7 +47,7 @@ class OllamaProvider:
         print('----')
         if not stream:
             output = self.llm.invoke(messages)
-            output = json.dumps([output])
+            # output = json.dumps([output])
             print('---output ---')
             print(output)
             print('------')
