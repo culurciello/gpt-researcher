@@ -1,8 +1,10 @@
 # 🔎 GPT Researcher
-[![Official Website](https://img.shields.io/badge/Official%20Website-tavily.com-blue?style=flat&logo=world&logoColor=white)](https://tavily.com)
-[![Discord Follow](https://dcbadge.vercel.app/api/server/2pFkc83fRq?style=flat)](https://discord.com/invite/2pFkc83fRq)
+[![Official Website](https://img.shields.io/badge/Official%20Website-gptr.dev-blue?style=for-the-badge&logo=world&logoColor=white)](https://gptr.dev)
+[![Discord Follow](https://dcbadge.vercel.app/api/server/MN9M86kb?style=for-the-badge)](https://discord.gg/MN9M86kb)
+
 [![GitHub Repo stars](https://img.shields.io/github/stars/assafelovic/gpt-researcher?style=social)](https://github.com/assafelovic/gpt-researcher)
-[![Twitter Follow](https://img.shields.io/twitter/follow/tavilyai?style=social)](https://twitter.com/tavilyai)
+[![Twitter Follow](https://img.shields.io/twitter/follow/assaf_elovic?style=social)](https://twitter.com/assaf_elovic)
+[![PyPI version](https://badge.fury.io/py/gpt-researcher.svg)](https://badge.fury.io/py/gpt-researcher)
 
 -  [English](README.md)
 -  [中文](README-zh_CN.md)
@@ -23,7 +25,7 @@
 
 ## 架构
 主要思想是运行“**计划者**”和“**执行**”代理，而**计划者**生成问题进行研究，“**执行**”代理根据每个生成的研究问题寻找最相关的信息。最后，“**计划者**”过滤和聚合所有相关信息并创建研究报告。<br /> <br /> 
-代理同时利用 gpt3.5-turbo 和 gpt-4-turbo（128K 上下文）来完成一项研究任务。我们仅在必要时使用这两种方法对成本进行优化。**研究任务平均耗时约 3 分钟，成本约为 ~0.1 美元**。
+代理同时利用 gpt3.5-turbo 和 gpt-4o（128K 上下文）来完成一项研究任务。我们仅在必要时使用这两种方法对成本进行优化。**研究任务平均耗时约 3 分钟，成本约为 ~0.1 美元**。
 
 <div align="center">
 <img align="center" height="500" src="https://cowriter-images.s3.amazonaws.com/architecture.png">
@@ -41,7 +43,7 @@
 https://github.com/assafelovic/gpt-researcher/assets/13554167/a00c89a6-a295-4dd0-b58d-098a31c40fda
 
 ## 教程
- - [运行原理](https://docs.tavily.com/blog/building-gpt-researcher)
+ - [运行原理](https://docs.gptr.dev/blog/building-gpt-researcher)
  - [如何安装](https://www.loom.com/share/04ebffb6ed2a4520a27c3e3addcdde20?sid=da1848e8-b1f1-42d1-93c3-5b0b9c3b24ea)
  - [现场演示](https://www.loom.com/share/6a3385db4e8747a1913dd85a7834846f?sid=a740fd5b-2aa3-457e-8fb7-86976f59f9b8)
 
@@ -55,7 +57,7 @@ https://github.com/assafelovic/gpt-researcher/assets/13554167/a00c89a6-a295-4dd0
 
 ## 📖 文档
 
-请参阅[此处](https://docs.tavily.com/docs/gpt-researcher/getting-started)，了解完整文档：
+请参阅[此处](https://docs.gptr.dev/docs/gpt-researcher/getting-started)，了解完整文档：
 
 - 入门（安装、设置环境、简单示例）
 - 操作示例（演示、集成、docker 支持）
@@ -105,7 +107,7 @@ $ uvicorn main:app --reload
 
 > **第 5 步** - 在任何浏览器上访问 http://localhost:8000，享受研究乐趣！
 
-要了解如何开始使用 Docker 或了解有关功能和服务的更多信息，请访问 [documentation](https://docs.tavily.com) 页面。
+要了解如何开始使用 Docker 或了解有关功能和服务的更多信息，请访问 [documentation](https://docs.gptr.dev) 页面。
 
 ## 🚀 贡献
 我们非常欢迎您的贡献！如果您感兴趣，请查看 [contributing](CONTRIBUTING.md)。

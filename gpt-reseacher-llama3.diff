@@ -1,0 +1,184 @@
+diff --git a/gpt_researcher/config/config.py b/gpt_researcher/config/config.py
+index 9d4a78d..8f5ab34 100644
+--- a/gpt_researcher/config/config.py
++++ b/gpt_researcher/config/config.py
+@@ -9,11 +9,11 @@ class Config:
+     def __init__(self, config_file: str = None):
+         """Initialize the config class."""
+         self.config_file = os.path.expanduser(config_file) if config_file else os.getenv('CONFIG_FILE')
+-        self.retriever = os.getenv('RETRIEVER', "tavily")
+-        self.embedding_provider = os.getenv('EMBEDDING_PROVIDER', 'openai')
+-        self.llm_provider = os.getenv('LLM_PROVIDER', "openai")
+-        self.fast_llm_model = os.getenv('FAST_LLM_MODEL', "gpt-3.5-turbo-16k")
+-        self.smart_llm_model = os.getenv('SMART_LLM_MODEL', "gpt-4-turbo")
++        self.retriever = os.getenv('RETRIEVER', "duckduckgo")
++        self.embedding_provider = os.getenv('EMBEDDING_PROVIDER', 'huggingface')
++        self.llm_provider = os.getenv('LLM_PROVIDER', "local")
++        self.fast_llm_model = os.getenv('FAST_LLM_MODEL', "meta-llama/Meta-Llama-3-8B-Instruct")
++        self.smart_llm_model = os.getenv('SMART_LLM_MODEL', "meta-llama/Meta-Llama-3-8B-Instruct")
+         self.fast_token_limit = int(os.getenv('FAST_TOKEN_LIMIT', 2000))
+         self.smart_token_limit = int(os.getenv('SMART_TOKEN_LIMIT', 4000))
+         self.browse_chunk_max_length = int(os.getenv('BROWSE_CHUNK_MAX_LENGTH', 8192))
+diff --git a/gpt_researcher/llm_provider/__init__.py b/gpt_researcher/llm_provider/__init__.py
+index 9c4c29e..c9f4f3f 100644
+--- a/gpt_researcher/llm_provider/__init__.py
++++ b/gpt_researcher/llm_provider/__init__.py
+@@ -1,9 +1,11 @@
+ from .google.google import GoogleProvider
+ from .openai.openai import OpenAIProvider
+ from .azureopenai.azureopenai import AzureOpenAIProvider
++from .local.local import LocalProvider
+ 
+ __all__ = [
+     "GoogleProvider",
+     "OpenAIProvider",
+-    "AzureOpenAIProvider"
++    "AzureOpenAIProvider",
++    "LocalProvider"
+ ]
+diff --git a/gpt_researcher/llm_provider/local/__init__.py b/gpt_researcher/llm_provider/local/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/gpt_researcher/llm_provider/local/local.py b/gpt_researcher/llm_provider/local/local.py
+new file mode 100644
+index 0000000..1caef8f
+--- /dev/null
++++ b/gpt_researcher/llm_provider/local/local.py
+@@ -0,0 +1,92 @@
++import os
++
++import torch
++from colorama import Fore, Style
++from transformers import AutoTokenizer
++from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
++
++class LocalProvider:
++
++    def __init__(
++        self,
++        model,
++        temperature,
++        max_tokens
++    ):
++        print('LocalProvider init, temperature =', temperature, "max_tokens =", max_tokens)
++        if max_tokens is not None and max_tokens > 8192:
++            max_tokens = 8192
++        self.model = model
++        self.temperature = temperature
++        self.max_tokens = max_tokens
++        self.llm = self.get_llm_model()
++
++    def get_api_key(self):
++        """
++        Gets the API key
++        Returns:
++
++        """
++        return None
++
++    def get_base_url(self):
++        """
++        Gets the base URL
++        Returns:
++
++        """
++        return None
++
++
++    def get_llm_model(self):
++        # Initializing the chat model
++        llm = HuggingFacePipeline.from_model_id(
++            model_id=self.model,
++            task="text-generation",
++            device=None,
++            pipeline_kwargs={"max_new_tokens": self.max_tokens},#, "temperature" : self.temperature},
++            model_kwargs={"device_map":"auto","torch_dtype":"auto"}
++        )
++        return llm
++
++    async def get_chat_response(self, messages, stream, websocket=None):
++        print('--- get_chat_response ---, stream =', stream)
++        print(messages)
++        print('----')
++        tokenizer = AutoTokenizer.from_pretrained(self.model)
++        model_input = tokenizer.apply_chat_template(messages, tokenize=False)
++        model_input += "<|start_header_id|>assistant<|end_header_id|>\n\n"
++        print('--- LLM input ---')
++        print(model_input)
++        print('----')
++        if not stream:
++            # Getting output from the model chain using ainvoke for asynchronous invoking
++            output = self.llm(model_input)
++            print('---output ---')
++            print(output)
++            print('------')
++            return output
++
++        else:
++            return await self.stream_response(messages, websocket)
++
++    async def stream_response(self, messages, websocket=None):
++        paragraph = ""
++        response = ""
++        print('stream_response', websocket, messages)
++        print('---------------')
++
++        # Streaming the response using the chain astream method from langchain
++        async for chunk in self.llm.astream(messages):
++            content = chunk
++            if content is not None:
++                response += content
++                paragraph += content
++                if "\n" in paragraph:
++                    if websocket is not None:
++                        await websocket.send_json({"type": "report", "output": paragraph})
++                    else:
++                        print(f"{Fore.GREEN}{paragraph}{Style.RESET_ALL}")
++                    paragraph = ""
++
++        return response
+diff --git a/gpt_researcher/master/functions.py b/gpt_researcher/master/functions.py
+index 2188c01..7e29b26 100644
+--- a/gpt_researcher/master/functions.py
++++ b/gpt_researcher/master/functions.py
+@@ -376,4 +376,4 @@ def add_source_urls(report_markdown: str, visited_urls: set):
+ 
+     except Exception as e:
+         print(f"Encountered exception in adding source urls : {e}")
+-        return report_markdown
+\ No newline at end of file
++        return report_markdown
+diff --git a/gpt_researcher/master/prompts.py b/gpt_researcher/master/prompts.py
+index d8dfd6c..6ec333d 100644
+--- a/gpt_researcher/master/prompts.py
++++ b/gpt_researcher/master/prompts.py
+@@ -22,7 +22,7 @@ def generate_search_queries_prompt(question: str, parent_query: str, report_type
+     return f'Write {max_iterations} google search queries to search online that form an objective opinion from the following task: "{task}"' \
+            f'Use the current date if needed: {datetime.now().strftime("%B %d, %Y")}.\n' \
+            f'Also include in the queries specified task details such as locations, names, etc.\n' \
+-           f'You must respond with a list of strings in the following format: ["query 1", "query 2", "query 3"].'
++           f'You must respond with a list of strings in the following format: ["query 1", "query 2", "query 3"] with no other preamble or explanation.'
+ 
+ 
+ def generate_report_prompt(question, context, report_format="apa", total_words=1000):
+diff --git a/gpt_researcher/utils/llm.py b/gpt_researcher/utils/llm.py
+index 829360a..b7f2b8a 100644
+--- a/gpt_researcher/utils/llm.py
++++ b/gpt_researcher/utils/llm.py
+@@ -27,6 +27,9 @@ def get_provider(llm_provider):
+         case "google":
+             from ..llm_provider import GoogleProvider
+             llm_provider = GoogleProvider
++        case "local":
++            from ..llm_provider import LocalProvider
++            llm_provider = LocalProvider
+ 
+         case _:
+             raise Exception("LLM provider not found.")
+@@ -144,4 +147,4 @@ async def construct_subtopics(task: str, data: str, config, subtopics: list = []
+ 
+     except Exception as e:
+         print("Exception in parsing subtopics : ", e)
+-        return subtopics
+\ No newline at end of file
++        return subtopics
